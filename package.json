@@ -1,0 +1,25 @@
+{
+  "name": "zoom-archiver",
+  "version": "1.0.0",
+  "description": "Downloads Zoom Cloud recordings and uploads them to Google Drive",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kincoppal/zoom-archiver.git"
+  },
+  "author": "James Davis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kincoppal/zoom-archiver/issues"
+  },
+  "homepage": "https://github.com/kincoppal/zoom-archiver#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "filenamify": "^4.1.0",
+    "googleapis": "^51.0.0",
+    "path": "^0.12.7"
+  }
+}
