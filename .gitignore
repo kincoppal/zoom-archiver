@@ -1,3 +1,9 @@
+# Config files and credentials
+config.js
+credentials.json
+test.js
+package-lock.json
+
 # Logs
 logs
 *.log
