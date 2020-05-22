@@ -4,6 +4,33 @@ const zoom = require('./lib/zoom')
 const fs = require('fs')
 const filenamify = require('filenamify')
 const path = require('path')
+const { createLogger, format, transports } = require('winston');
+
+// Initialise the logger
+const myFormat = format.printf(({ level, message, timestamp }) => {
+    return `${timestamp} ${level}: ${message}`
+})
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.prettyPrint(),
+    myFormat
+  ),
+  defaultMeta: { service: 'zoom-archiver' },
+  transports: [
+    // - Write to all logs with level `info` and below to `quick-start-combined.log`.
+    // - Write all logs error (and below) to `quick-start-error.log`.
+    new transports.File({ filename: 'logs/zoom-archiver-error.log', level: 'error' }),
+    new transports.File({ filename: 'logs/zoom-archiver-combined.log' }),
+    new transports.Console({ level: 'info' })
+  ]
+});
+
 
 async function start() {
     try {
@@ -12,11 +39,11 @@ async function start() {
         var recordingCount = 1
         for(const meeting of recordings.meetings){
             const datestamp = zoom.convertDate(meeting.start_time)
-            console.log('Processing ' + recordingCount + ' of ' + recordings.total_records + '... ' + meeting.topic + ' ' + meeting.uuid)
+            logger.info('Processing ' + recordingCount + ' of ' + recordings.total_records + '... ' + meeting.topic + ' ' + meeting.uuid)
 
             // Create local directory to store Zoom meeting files
             const localdir = config.downloadFolder + '/' + filenamify(datestamp + ' - ' + meeting.host_email + ' - ' + meeting.id)
-            console.log(localdir)
+            logger.info(localdir)
             if (!fs.existsSync(localdir)) { fs.mkdirSync(localdir) }
 
             // Download all files from Zoom meeting
@@ -24,7 +51,7 @@ async function start() {
                 //console.log(' - ' + file.download_url + ' ' + file.file_type.toLowerCase())
                 if(file.status === 'completed') {  // only download if files are able to download
                     const localfile = localdir + '/' + filenamify(datestamp + ' - ' + meeting.topic + '.' + file.file_type.toLowerCase())
-                    console.log(' - Downloading: ' + localfile)
+                    logger.info(' - Downloading: ' + localfile)
                     await zoom.downloadRecordingFile(file.download_url, localfile)
                 }
                 if(file.status === 'processing') { 
@@ -37,23 +64,24 @@ async function start() {
             // Upload files to Google Drive folder
             var files = await fs.promises.readdir(localdir)
             for (const file of files){
-                console.log(' - Uploading:', file)
+                logger.info(' - Uploading: ' + file)
                 await gdrive.uploadFile(path.resolve(localdir, file), gdriveFolder.id)
             }
 
             // Share Google Drive folder
             await gdrive.shareFolder(gdriveFolder.id, meeting.host_email)
-            console.log(' - Shared with ' + meeting.host_email + ' ' + gdriveFolder.webViewLink)
+            logger.info(' - Shared with ' + meeting.host_email + ' ' + gdriveFolder.webViewLink)
 
 
             // Trash Zoom recording
             await zoom.trashRecordings(meeting.uuid)
+            logger.info(' - Zoom recording sent to trash')
 
             recordingCount++
         }
 
     } catch (err) {
-        console.log(err)
+        logger.error(err)
     }
 }
 
