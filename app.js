@@ -23,7 +23,6 @@ async function start() {
 
             // Download all files from Zoom meeting
             for(const file of meeting.recording_files){
-                //console.log(' - ' + file.download_url + ' ' + file.file_type.toLowerCase())
                 if(file.status === 'completed') {  // only download if files are able to download
                     const localfile = localdir + '/' + filenamify(datestamp + ' - ' + meeting.topic + '.' + file.file_type.toLowerCase())
                     logger.info(' - Downloading: ' + localfile)
