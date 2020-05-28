@@ -9,6 +9,9 @@ const path = require('path')
 
 async function start() {
     try {
+        // Authenticate Google API
+        await gdrive.authenticate()
+        
         // Get Zoom recordings
         const recordings = await zoom.getRecordings()
         var recordingCount = 1
