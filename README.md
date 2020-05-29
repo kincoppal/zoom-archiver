@@ -1,8 +1,16 @@
 # zoom-archiver
 Downloads Zoom Cloud recordings and uploads them to Google Drive
 
-Requires you to setup a Zoom app with JWT token and a Google service account. Save the Google `credentials.json` and following `config.json` file in root directory.
+Start by creating a Zoom app and obtain a JWT token to authenticate against their API
 
+Then you will need to create a Google service account that uses OAuth2 to connect to the Google Drive API
+https://developers.google.com/identity/protocols/oauth2/service-account
+1. Create a service account in the Google Developer Console and download the credentials.json
+2. Delegate domain-wide authority to the service account so it can act on behalf of users
+3. Assign the Google Drive API scope to the service account in G Suite Admin console
+
+
+Save the Google `credentials.json` and create the following `config.json` file in the root directory.
 
 ```
 const config = {
